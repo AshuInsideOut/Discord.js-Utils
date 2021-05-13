@@ -8,7 +8,6 @@ async function askReactionQuestion(questionObj, channel) {
 
 async function askReactionQuestionProcesser(questionObj, channel, last) {
     try {
-        let timeout = 60;
         const options = questionObj.options;
         const possibleAnswers = questionObj.possibleAnswers;
         let sentQuestion;
@@ -26,10 +25,11 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
             reactedBy = u;
             return true;
         };
+        const collectorOptions = { maxEmojis: 1, errors: ['time'] };
         if (options) {
-            if (options.timeout) timeout = options.timeout;
+            if (options.timeout) collectorOptions.time = options.timeout * 1000;
         }
-        const collectedReaction = await sentQuestion.awaitReactions(filter, { time: timeout * 1000, maxEmojis: 1, errors: ['time'] });
+        const collectedReaction = await sentQuestion.awaitReactions(filter, collectorOptions);
         const answer = collectedReaction.first();
         let processedData;
         if (questionObj.run) processedData = await questionObj.run({ reaction: answer, user: reactedBy, question: sentQuestion, last });
@@ -45,7 +45,6 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
 
 async function askMessageQuestionProcesser(questionObj, channel, last) {
     try {
-        let timeout = 60;
         const options = questionObj.options;
         let sentQuestion;
         try {
@@ -55,10 +54,11 @@ async function askMessageQuestionProcesser(questionObj, channel, last) {
             return error.message;
         }
         const filter = message => questionObj.filter({ message, question: sentQuestion, last, });
+        const collectorOptions = { max: 1, errors: ['time'] };
         if (options) {
-            if (options.timeout) timeout = options.timeout;
+            if (options.timeout) collectorOptions.time = options.timeout * 1000;
         }
-        const collectedAnswer = await channel.awaitMessages(filter, { max: 1, time: timeout * 1000, errors: ['time'] });
+        const collectedAnswer = await channel.awaitMessages(filter, collectorOptions);
         const answer = collectedAnswer.first();
         let processedData;
         if (questionObj.run) processedData = await questionObj.run({ message: answer, question: sentQuestion, last });
