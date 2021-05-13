@@ -35,7 +35,11 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
         const filter = (r, u) => {
             if (options) {
                 if (options.stopReaction) {
-                    if (r.emoji.name === options.stopReaction) return true;
+                    if (r.emoji.name === options.stopReaction) {
+                        if (options.stopReactionFilter)
+                            return options.stopReactionFilter({ reaction: r, user: u, question: sentQuestion, last, });
+                        return true;
+                    }
                 }
             }
             if (!possibleAnswers.includes(r.emoji.name)) return false;
