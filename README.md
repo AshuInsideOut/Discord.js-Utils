@@ -6,7 +6,7 @@ You can take input as reactions or messages.
 
 # Installation
 
-`npm i discord.js-utils`
+`npm i @abdevs/discord.js-utils`
 
 # Terms and Conditions
 
