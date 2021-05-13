@@ -11,6 +11,10 @@
     "utils",
     "discord-utils"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ABDevs-Org/discord.js-utils.git"
+  },
   "author": "ABDevs",
   "license": "ISC"
 }
