@@ -25,19 +25,17 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
             if (channel.type === 'dm') return 'dmClosed';
             return error.message;
         }
-        possibleAnswers.forEach(possibleAnswer => {
-            sentQuestion.react(possibleAnswer);
-            if (options) {
-                if (options.stopReaction) sentQuestion.react(options.stopReaction);
-            }
-        });
+        possibleAnswers.forEach(possibleAnswer => sentQuestion.react(possibleAnswer));
+        if (options) {
+            if (options.stopReaction) sentQuestion.react(options.stopReaction);
+        }
         let reactedBy;
         const filter = (r, u) => {
             if (options) {
                 if (options.stopReaction) {
                     if (r.emoji.name === options.stopReaction) {
                         if (options.stopReactionFilter)
-                            return options.stopReactionFilter({ reaction: r, user: u, question: sentQuestion, last, });
+                            return await options.stopReactionFilter({ reaction: r, user: u, question: sentQuestion, last, });
                         return true;
                     }
                 }
