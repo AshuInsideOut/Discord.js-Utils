@@ -1,0 +1,16 @@
+{
+  "name": "discord.js-utils",
+  "version": "1.0.0",
+  "description": "A utils package for discord.js lib.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "discord.js-utils",
+    "utils",
+    "discord-utils"
+  ],
+  "author": "ABDevs",
+  "license": "ISC"
+}
