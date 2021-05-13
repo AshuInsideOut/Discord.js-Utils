@@ -6,6 +6,14 @@ async function askReactionQuestion(questionObj, channel) {
     return await askReactionQuestionProcesser(questionObj, channel);
 }
 
+/*
+Options:
+  stopReaction: String,
+  timeout: Number,
+  deleteReaction: Boolean,
+  deleteBotMessage: Boolean
+*/
+
 async function askReactionQuestionProcesser(questionObj, channel, last) {
     try {
         const options = questionObj.options;
@@ -17,9 +25,19 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
             if (channel.type === 'dm') return 'dmClosed';
             return error.message;
         }
-        possibleAnswers.forEach(possibleAnswer => sentQuestion.react(possibleAnswer));
+        possibleAnswers.forEach(possibleAnswer => {
+            sentQuestion.react(possibleAnswer);
+            if (options) {
+                if (options.stopReaction) sentQuestion.react(options.stopReaction);
+            }
+        });
         let reactedBy;
         const filter = (r, u) => {
+            if (options) {
+                if (options.stopReaction) {
+                    if (r.emoji.name === options.stopReaction) return true;
+                }
+            }
             if (!possibleAnswers.includes(r.emoji.name)) return false;
             if (!questionObj.filter({ reaction: r, user: u, question: sentQuestion, last })) return false;
             reactedBy = u;
@@ -31,11 +49,16 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
         }
         const collectedReaction = await sentQuestion.awaitReactions(filter, collectorOptions);
         const answer = collectedReaction.first();
+        if (options) {
+            if (options.stopReaction) {
+                if (answer.emoji.name === options.stopReaction) return 'stopped';
+            }
+        }
         let processedData;
         if (questionObj.run) processedData = await questionObj.run({ reaction: answer, user: reactedBy, question: sentQuestion, last });
-        if (questionObj.options) {
-            if (questionObj.options.deleteReaction) sentQuestion.reactions.resolve(answer).users.remove(reactedBy);
-            if (questionObj.options.deleteBotMessage) sentQuestion.delete();
+        if (options) {
+            if (options.deleteReaction) sentQuestion.reactions.resolve(answer).users.remove(reactedBy);
+            if (options.deleteBotMessage) sentQuestion.delete();
         }
         return { answer, reactedBy, processedData, sentQuestion };
     } catch (error) {
@@ -43,7 +66,84 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
     }
 }
 
+/*
+Options:
+  stopReaction: String,
+  timeout: Number,
+  deleteUserMessage: Boolean,
+  deleteBotMessage: Boolean
+*/
+
 async function askMessageQuestionProcesser(questionObj, channel, last) {
+    try {
+        const options = questionObj.options;
+        let sentQuestion;
+        try {
+            sentQuestion = await channel.send(await questionObj.content(last));
+        } catch (error) {
+            if (channel.type === 'dm') return 'dmClosed';
+            return error.message;
+        }
+        if (options) {
+            if (options.stopReaction) sentQuestion.react(options.stopReaction);
+        }
+        const filter = message => questionObj.filter({ message, question: sentQuestion, last, });
+        const collectorOptions = { max: 1, errors: ['time'] };
+        if (options) {
+            if (options.timeout) collectorOptions.time = options.timeout * 1000;
+        }
+        let answer;
+        if (options) {
+            if (options.stopReaction) {
+                const stopReactionFilter = (r, u) => {
+                    if (r.emoji.name !== options.stopReaction) return false;
+                    if (options.stopReactionFilter) return options.stopReactionFilter({ reaction: r, user: u, question: sentQuestion, last, });
+                    return false;
+                };
+                const stopReactionOptions = { maxEmojis: 1 };
+                if (options) {
+                    if (options.timeout) stopReactionOptions.time = options.timeout * 1000;
+                }
+                answer = await awaitMessage({ channel, filter, options: collectorOptions }, { message: sentQuestion, filter: stopReactionFilter, options: stopReactionOptions });
+            }
+        } else {
+            const collectedAnswer = await channel.awaitMessages(filter, collectorOptions);
+            answer = collectedAnswer.first();
+        }
+        if (typeof answer !== 'object') return answer;
+        let processedData;
+        if (questionObj.run) processedData = await questionObj.run({ message: answer, question: sentQuestion, last });
+        if (options) {
+            if (options.deleteBotMessage) sentQuestion.delete();
+            if (options.deleteUserMessage) answer.delete();
+        }
+        return { answer, processedData, sentQuestion };
+    } catch (error) {
+        return 'time';
+    }
+}
+
+async function awaitMessage(channelData, messageData) {
+    return await new Promise((resolve) => {
+        const messageCollector = channelData.channel.createMessageCollector(channelData.filter, messageData.options);
+        messageCollector.on('collect', m => {
+            resolve(m);
+            messageCollector.stop();
+        });
+        messageCollector.on('end', (c, reason) => {
+            if (reason === 'time') resolve(reason);
+        });
+        if (messageData) {
+            const reactionCollector = messageData.message.createReactionCollector(messageData.filter, messageData.options);
+            reactionCollector.on('collect', r => {
+                resolve('stopped');
+                reactionCollector.stop();
+            });
+        }
+    });
+}
+
+/*
     try {
         const options = questionObj.options;
         let sentQuestion;
@@ -70,7 +170,7 @@ async function askMessageQuestionProcesser(questionObj, channel, last) {
     } catch (error) {
         return 'time';
     }
-}
+*/
 
 
 async function askMessageQuestions(questionObjs, channel) {
@@ -98,7 +198,7 @@ async function askReactionQuestions(questionObjs, channel) {
     let lastQuestion;
     let lastProcessedData;
     for (const questionObj of questionObjs) {
-        const last = { lastAnswer, lastAnsweredBy, lastProcessedData, processedAnswers: answers };
+        const last = { lastAnswer, lastAnsweredBy, lastQuestion, lastProcessedData, processedAnswers: answers };
         const data = await askReactionQuestionProcesser(questionObj, channel, last);
         if (typeof data !== 'object') return data;
         const { answer, reactedBy, processedData, sentQuestion } = data;
