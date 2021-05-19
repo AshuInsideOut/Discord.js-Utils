@@ -12,7 +12,7 @@ async function react(message, reactions) {
     if (!Array.isArray(reactions)) reactions = [reactions];
     reactions.forEach(reaction => message.react(reaction).catch(e => {
         //Suppresses errors if the user reacts before all the reactions got added.
-        if (!e.message.contains('Unknown Message')) console.log(e);
+        if (!e.message === 'Unknown Message') console.log(e);
     }));
 }
 
@@ -68,7 +68,7 @@ async function askMessageQuestionProcesser(questionObj, channel, last) {
     const stopReaction = stopReactionObj ? (stopReactionObj.reaction || defaultStopEmoji) : undefined;
     let question;
     try {
-        question = await channel.send(await questionObj.content(last));
+        question = await channel.send(await questionObj.content({ last }));
     } catch (error) {
         return { error: channel.type === 'dm' ? 'dmClosed' : error };
     }

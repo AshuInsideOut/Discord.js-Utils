@@ -55,7 +55,10 @@ function init(client, options) {
   };
 
   client.on('message', async (message) => {
-    const handlerObj = findCommandObj(message.content, message.guild.id, prefix);
+    if (message.author.bot) return;
+    let handlerObj;
+    if (message.channel.type === 'text') handlerObj = findCommandObj(message.content, message.guild.id, prefix);
+    else handlerObj = findCommandObj(message.content, undefined, prefix);
     if (!handlerObj) return;
     let counter = 0;
     const next = () => {
@@ -67,7 +70,7 @@ function init(client, options) {
 }
 
 function findCommandObj(content, guildId, prefix) {
-  if (prefixMap) prefix = getPrefixMap().get(guildId) || prefix;
+  if (prefixMap && guildId) prefix = getPrefixMap().get(guildId) || prefix;
   const contentSplit = content.split(/\s+/);
   const executedCommand = contentSplit[0];
   contentSplit.shift();
