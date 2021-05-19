@@ -126,12 +126,12 @@ async function askMessageQuestions(questionObjs, channel) {
     let last;
     for (const questionObj of questionObjs) {
         const { data, error } = await askMessageQuestionProcesser(questionObj, channel, last);
-        if (error) return error;
+        if (error) return { error };
         const { message, result, question } = data;
         last = { message, result, question, answered };
         answered.push(data);
     }
-    return answered;
+    return { data: answered };
 }
 
 async function askReactionQuestions(questionObjs, channel) {
@@ -139,12 +139,12 @@ async function askReactionQuestions(questionObjs, channel) {
     let last;
     for (const questionObj of questionObjs) {
         const { data, error } = await askReactionQuestionProcesser(questionObj, channel, last);
-        if (error) return error;
+        if (error) return { error };
         const { reaction, user, result, question, possibleAnswers } = data;
         last = { reaction, user, question, result, possibleAnswers, answered };
         answered.push(data);
     }
-    return answered;
+    return { data: answered };
 }
 
 async function askQuestions(questionObjs, channel) {
@@ -153,19 +153,19 @@ async function askQuestions(questionObjs, channel) {
     for (const questionObj of questionObjs) {
         if (questionObj.type === 'reaction') {
             const { data, error } = await askReactionQuestionProcesser(questionObj, channel, last);
-            if (error) return error;
+            if (error) return { error };
             const { reaction, user, result, question, possibleAnswers } = data;
             last = { reaction, user, result, question, possibleAnswers, answered };
             answered.push(data);
             continue;
         }
         const { data, error } = await askMessageQuestionProcesser(questionObj, channel, last);
-        if (error) return error;
+        if (error) return { error };
         const { message, result, question } = data;
         last = { message, result, question, answered };
         answered.push(data);
     }
-    return answered;
+    return { data: answered };
 }
 
 function isIterable(obj) {
