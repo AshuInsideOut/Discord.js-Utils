@@ -55,7 +55,7 @@ function init(client, options) {
   };
 
   client.on('message', async (message) => {
-    const handlerObj = findCommandObj(message.content, guild.id, prefix);
+    const handlerObj = findCommandObj(message.content, message.guild.id, prefix);
     if (!handlerObj) return;
     let counter = 0;
     const next = () => {
