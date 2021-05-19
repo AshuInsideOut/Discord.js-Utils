@@ -3,7 +3,7 @@ const commandManager = require('./managers/commandManager');
 const helpHanlder = require('./default-commands/help');
 
 module.exports.init = (options, client) => {
-    if (options.addHelpCommand) {
+    if (!options.removeHelpCommand) {
         commandManager.addCommand({
             command: 'help',
             handler: helpHanlder,
