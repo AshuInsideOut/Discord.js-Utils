@@ -59,7 +59,7 @@ function init(client, options) {
     if (message.channel.type === 'dm' || !isPrefixMapEnabled)
       executedCommand = `${prefix}${message.content}`;
     else executedCommand = getPrefixMap().get(message.guild.id) || `${prefix}${message.content}`;
-    const handlerObj = findCommandObj(executedCommand, prefix);
+    const handlerObj = findCommandObj(executedCommand, guild.id, prefix);
     if (!handlerObj) return;
     let counter = 0;
     const next = () => {
@@ -70,7 +70,8 @@ function init(client, options) {
   });
 }
 
-function findCommandObj(content, prefix) {
+function findCommandObj(content, guildId, prefix) {
+  if (getPrefixMap()) prefix = getPrefixMap().get(guildId) || prefix;
   for (const handlerObj of commandHandlerObjs) {
     const command = handlerObj.command;
     const aliases = handlerObj.aliases || [];
