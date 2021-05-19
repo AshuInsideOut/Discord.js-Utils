@@ -78,7 +78,7 @@ function findCommandObj(content, guildId, prefix) {
   for (const handlerObj of commandHandlerObjs) {
     const command = handlerObj.command;
     const aliases = handlerObj.aliases || [];
-    if (executedCommand === `${prefix}${command}`) return { ...handlerObj, command, args };
+    if (executedCommand === `${prefix}${command}`) return { ...handlerObj, command, args, aliases };
     for (const alias of aliases) {
       if (executedCommand !== `${prefix}${alias}`) continue;
       return { ...handlerObj, command, args };
