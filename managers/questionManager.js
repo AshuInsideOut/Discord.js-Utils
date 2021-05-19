@@ -21,7 +21,7 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
     const possibleAnswers = await questionObj.possibleAnswers({ last });
     const isStopEnabled = options && options.stopReaction;
     const stopReactionObj = options.stopReaction;
-    const stopReaction = stopReactionObj.reaction || defaultStopEmoji;
+    const stopReaction = stopReactionObj ? (stopReactionObj.reaction || defaultStopEmoji) : undefined;
     let question;
     try {
         question = await channel.send(await questionObj.content({ last }));
@@ -65,7 +65,7 @@ async function askMessageQuestionProcesser(questionObj, channel, last) {
     const options = questionObj.options;
     const isStopEnabled = options && options.stopReaction;
     const stopReactionObj = options.stopReaction;
-    const stopReaction = stopReactionObj.reaction || defaultStopEmoji;
+    const stopReaction = stopReactionObj ? (stopReactionObj.reaction || defaultStopEmoji) : undefined;
     let question;
     try {
         question = await channel.send(await questionObj.content(last));
