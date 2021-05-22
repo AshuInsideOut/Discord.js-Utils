@@ -1,3 +1,4 @@
+const logger = require('../utils/logger');
 const defaultStopEmoji = '🛑';
 
 async function askMessageQuestion(questionObj, channel) {
@@ -12,7 +13,7 @@ async function react(message, reactions) {
     if (!Array.isArray(reactions)) reactions = [reactions];
     reactions.forEach(reaction => message.react(reaction).catch(e => {
         //Suppresses errors if the user reacts before all the reactions got added.
-        if (!e.message === 'Unknown Message') console.log(e);
+        if (!e.message === 'Unknown Message') logger.error(`Failed to add a reaction, Reason: ` + e.message);
     }));
 }
 
