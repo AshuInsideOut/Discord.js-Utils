@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ABDevs-Org/discord.js-utils.git"
+    "url": "https://github.com/ABDevs-Org/Discord.js-Utils.git"
   },
   "publishConfig": {
     "access": "public"
