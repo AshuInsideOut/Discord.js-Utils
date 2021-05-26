@@ -1,4 +1,5 @@
 const logger = require('../utils/logger');
+const { getClient } = require('../utils/constants');
 
 const registeredCommands = [];
 const commandHandlerObjs = [];
@@ -17,6 +18,7 @@ middlewarePipeline.push(async (commandInfo, message) => {
 });
 
 function addCommand(handlerObj) {
+  if (!getClient()) return logger.error('Trying to add discord commands while the command manager is disabled.');
   const regFailedTemplate = 'Failed to register a command. Reason: ';
   if (!handlerObj.command) return logger.error(`${regFailedTemplate}provide a command property.`);
   if (!handlerObj.handler) return logger.error(`${regFailedTemplate}provide a handler property.`);
@@ -33,23 +35,23 @@ function addCommand(handlerObj) {
 }
 
 function addMiddleware(handlerObj) {
+  if (!getClient()) return logger.error('Trying to add discord command middleware while the command manager is disabled.');
   middlewarePipeline.splice(middlewarePipeline.length - 1, 0, handlerObj);
 }
 
-function init(client, options) {
+function init(options) {
+  const client = getClient();
   if (!client) {
     logger.warn(`Client not provided, Command Manager has been disabled.`);
     return;
   }
   let prefix = options.prefix;
-  let isPrefixMapEnabled = false;
   if (!options || !options.prefix) {
     prefix = '!';
     logger.warn(`Prefix not provided, setting default one '!'.`);
   }
 
   if (!options && options.prefixMap) {
-    isPrefixMapEnabled = true;
     prefixMap = new Map();
     logger.info(`Enabled per-guild prefix mapping`);
   };

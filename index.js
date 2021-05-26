@@ -1,9 +1,12 @@
 const questionManager = require('./managers/questionManager');
 const commandManager = require('./managers/commandManager');
 const helpHanlder = require('./default-commands/help');
+const utils = require('./utils/utils');
+const { setClient } = require('./utils/constants');
 
-module.exports.init = (options, client) => {
-    if (!options.removeHelpCommand) {
+function init(options, client) {
+    setClient(client);
+    if (options && options.commandManager && !options.removeHelpCommand) {
         commandManager.addCommand({
             command: 'help',
             handler: helpHanlder,
@@ -14,8 +17,12 @@ module.exports.init = (options, client) => {
             }
         });
     }
-    commandManager.init(client, options);
-    return { questionManager, commandManager };
+    if (options && options.commandManager) commandManager.init(options);
+}
+
+module.exports = {
+    ...questionManager,
+    ...commandManager,
+    ...utils,
+    init
 };
-module.exports.questionManager = questionManager;
-module.exports.commandManager = commandManager;
