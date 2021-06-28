@@ -1,15 +1,15 @@
 require('colors');
 
 function info(message) {
-    console.log('[INFO]'.blue.bold, '[Discord.JS Utils]'.green.bold, message.blue.bold);
+    console.log('[INFO]: '.blue, '[Discord.JS Utils]'.green, message.blue);
 }
 
 function error(message) {
-    console.log('[ERROR]'.red.bold, '[Discord.JS Utils]'.green.bold, message.red.bold);
+    console.log('[ERROR]: '.red, '[Discord.JS Utils]'.green, message.red);
 }
 
 function warn(message) {
-    console.log('[WARN]'.yellow.bold, '[Discord.JS Utils]'.green.bold, message.yellow.bold);
+    console.log('[WARN]: '.yellow, '[Discord.JS Utils]'.green, message.yellow);
 }
 
 module.exports.info = info;

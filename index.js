@@ -1,28 +1,36 @@
-const questionManager = require('./managers/questionManager');
-const commandManager = require('./managers/commandManager');
-const helpHanlder = require('./default-commands/help');
+const QuestionManager = require('./managers/QuestionManager');
+const QuestionsAPI = require('./managers/QuestionsAPI');
+const Menus = require('./menus');
+const CommandManager = require('./managers/CommandManager');
+const helpHandler = require('./default-commands/help');
 const utils = require('./utils/utils');
 const { setClient } = require('./utils/constants');
 
-function init(options, client) {
-    setClient(client);
-    if (options && options.commandManager && !options.removeHelpCommand) {
-        commandManager.addCommand({
-            command: 'help',
-            handler: helpHanlder,
-            description: 'Shows list of all commands.',
-            category: {
-                name: 'General',
-                weight: 100
-            }
-        });
-    }
-    if (options && options.commandManager) commandManager.init(options);
-}
-
 module.exports = {
-    ...questionManager,
-    ...commandManager,
+    ...QuestionManager,
+    ...QuestionsAPI,
+    ...CommandManager,
+    ...Menus,
     ...utils,
-    init
+    /**
+     * @param {import("discord.js").Client} client
+     * @param {{ isCmdManager: boolean; isHelpCommand: boolean; }} [options]
+     */
+    init(client, options = { isCmdManager: false, isHelpCommand: false }) {
+        setClient(client);
+        const isCmdManager = options && options.isCmdManager;
+        if (!isCmdManager) return;
+        if (options.isHelpCommand) {
+            CommandManager.addCommand({
+                command: 'help',
+                handler: helpHandler,
+                description: 'Shows list of all commands.',
+                category: {
+                    name: 'General',
+                    weight: 100
+                }
+            });
+        }
+        CommandManager.init(options);
+    }
 };

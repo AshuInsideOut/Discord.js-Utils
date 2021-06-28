@@ -1,4 +1,4 @@
-const { registeredCommands } = require('../managers/commandManager');
+const { registeredCommands } = require('../managers/CommandManager');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = async (message) => {
@@ -7,7 +7,6 @@ module.exports = async (message) => {
     const categories = [];
     sortedCommands.forEach(command => {
         if (!categories.find(c => c.category.name)) categories.push(command.category);
-        //if (!categories.includes(command.category)) categories.push(command.category);
     });
     const sortedCategoryCommandArray = [];
     categories.forEach(category => {

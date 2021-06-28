@@ -1,23 +1,31 @@
 const logger = require('../utils/logger');
 const defaultStopEmoji = '🛑';
 
+/**
+ * @deprecated
+ * Use QuestionsAPI
+ */
 async function askMessageQuestion(questionObj, channel) {
-    return await askMessageQuestionProcesser(questionObj, channel);
+    return await askMessageQuestionProcessor(questionObj, channel);
 }
 
+/**
+ * @deprecated
+ * Use QuestionsAPI
+ */
 async function askReactionQuestion(questionObj, channel) {
-    return await askReactionQuestionProcesser(questionObj, channel);
+    return await askReactionQuestionProcessor(questionObj, channel);
 }
 
 async function react(message, reactions) {
     if (!Array.isArray(reactions)) reactions = [reactions];
     reactions.forEach(reaction => message.react(reaction).catch(e => {
         //Suppresses errors if the user reacts before all the reactions got added.
-        if (!e.message === 'Unknown Message') logger.error(`Failed to add a reaction, Reason: ` + e.message);
+        if (e.message !== 'Unknown Message') logger.error(`Failed to add a reaction, Reason: ` + e.message);
     }));
 }
 
-async function askReactionQuestionProcesser(questionObj, channel, last) {
+async function askReactionQuestionProcessor(questionObj, channel, last) {
     const options = questionObj.options;
     const possibleAnswers = await questionObj.possibleAnswers({ last });
     const isStopEnabled = options && options.stopReaction;
@@ -49,6 +57,7 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
     try {
         collectedReaction = await question.awaitReactions(filter, collectorOptions);
     } catch (error) {
+        if (options && options.deleteQuestion) question.delete();
         return { error: isIterable(error) ? 'time' : error };
     }
     const answer = collectedReaction.first();
@@ -62,7 +71,7 @@ async function askReactionQuestionProcesser(questionObj, channel, last) {
     return { data };
 }
 
-async function askMessageQuestionProcesser(questionObj, channel, last) {
+async function askMessageQuestionProcessor(questionObj, channel, last) {
     const options = questionObj.options;
     const isStopEnabled = options && options.stopReaction;
     const stopReactionObj = options.stopReaction;
@@ -91,6 +100,7 @@ async function askMessageQuestionProcesser(questionObj, channel, last) {
         try {
             collectedAnswer = await channel.awaitMessages(filter, collectorOptions);
         } catch (error) {
+            if (options && options.deleteQuestion) question.delete();
             return { error: isIterable(error) ? 'time' : error };
         }
         answer = collectedAnswer.first();
@@ -122,11 +132,15 @@ async function awaitMessage(channelData, messageData) {
     });
 }
 
+/**
+ * @deprecated
+ * Use QuestionsAPI
+ */
 async function askMessageQuestions(questionObjs, channel) {
     const answered = [];
     let last;
     for (const questionObj of questionObjs) {
-        const { data, error } = await askMessageQuestionProcesser(questionObj, channel, last);
+        const { data, error } = await askMessageQuestionProcessor(questionObj, channel, last);
         if (error) return { error };
         const { message, result, question } = data;
         last = { message, result, question, answered };
@@ -135,11 +149,15 @@ async function askMessageQuestions(questionObjs, channel) {
     return { data: answered };
 }
 
+/**
+ * @deprecated
+ * Use QuestionsAPI
+ */
 async function askReactionQuestions(questionObjs, channel) {
     const answered = [];
     let last;
     for (const questionObj of questionObjs) {
-        const { data, error } = await askReactionQuestionProcesser(questionObj, channel, last);
+        const { data, error } = await askReactionQuestionProcessor(questionObj, channel, last);
         if (error) return { error };
         const { reaction, user, result, question, possibleAnswers } = data;
         last = { reaction, user, question, result, possibleAnswers, answered };
@@ -148,19 +166,23 @@ async function askReactionQuestions(questionObjs, channel) {
     return { data: answered };
 }
 
+/**
+ * @deprecated
+ * Use QuestionsAPI
+ */
 async function askQuestions(questionObjs, channel) {
     const answered = [];
     let last;
     for (const questionObj of questionObjs) {
         if (questionObj.type === 'reaction') {
-            const { data, error } = await askReactionQuestionProcesser(questionObj, channel, last);
+            const { data, error } = await askReactionQuestionProcessor(questionObj, channel, last);
             if (error) return { error };
             const { reaction, user, result, question, possibleAnswers } = data;
             last = { reaction, user, result, question, possibleAnswers, answered };
             answered.push(data);
             continue;
         }
-        const { data, error } = await askMessageQuestionProcesser(questionObj, channel, last);
+        const { data, error } = await askMessageQuestionProcessor(questionObj, channel, last);
         if (error) return { error };
         const { message, result, question } = data;
         last = { message, result, question, answered };
@@ -168,6 +190,8 @@ async function askQuestions(questionObjs, channel) {
     }
     return { data: answered };
 }
+
+
 
 function isIterable(obj) {
     if (obj == null) {

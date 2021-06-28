@@ -24,7 +24,7 @@ function addCommand(handlerObj) {
   if (!handlerObj.handler) return logger.error(`${regFailedTemplate}provide a handler property.`);
   if (!handlerObj.description) handlerObj.description = 'No description provided.';
   if (!handlerObj.category) handlerObj.category = {
-    name: 'Uncategorized',
+    name: 'UnCategorized',
     weight: 1
   };
   if (!handlerObj.aliases) handlerObj.aliases = [];
