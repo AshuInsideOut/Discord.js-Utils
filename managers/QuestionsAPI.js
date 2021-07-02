@@ -6,7 +6,7 @@ class MessageQuestion {
      * messageTimeout?: number;
      * deleteQuestion?: boolean;
      * deleteMessage?: boolean;
-     * }} options
+     * }} options timeout is in ms
      */
     setDefaultOptionsOverride(options) {
         this.options = options;
@@ -45,7 +45,7 @@ class ReactionQuestion {
      * reactionTimeout?: number;
      * deleteQuestion?: boolean;
      * deleteReaction?: boolean;
-     * }} options
+     * }} options timeout is in ms
      */
     setDefaultOptionsOverride(options) {
         this.options = options;
@@ -90,12 +90,12 @@ const registeredQuestions = new WeakMap();
 class QuestionsAPI {
     /**
      * @param {{
-     * messageTimeout: number;
-     * reactionTimeout: number;
+     * messageTimeout?: number;
+     * reactionTimeout?: number;
      * deleteQuestion?: boolean;
      * deleteMessage?: boolean;
      * deleteReaction?: boolean;
-     * }} defaultOptions
+     * }} defaultOptions timeouts are in ms
      */
     constructor(defaultOptions = { messageTimeout: 120 * 1000, reactionTimeout: 60 * 1000 }) {
         this.defaultOptions = defaultOptions;
@@ -153,7 +153,7 @@ async function react(message, reactions) {
 /**
  * @param {ReactionQuestion} question
  * @param {DMChannel | TextChannel | NewsChannel} channel
- * @param {{messageTimeout: number;reactionTimeout: number; stopEmote?: string;deleteQuestion?: boolean;deleteMessage?: boolean;deleteReaction?: boolean;}} defaultOptions
+ * @param {{messageTimeout?: number;reactionTimeout: number; stopEmote?: string;deleteQuestion?: boolean;deleteMessage?: boolean;deleteReaction?: boolean;}} defaultOptions
  * @param {{message: Message;result: Object;question: MessageQuestion; answered: []; } | {reaction: MessageReaction;user: User;result: Object;question: ReactionQuestion;possibleAnswers: string[];answered: [];}} last
  * @return {Promise<{data?: { reaction: MessageReaction; possibleAnswers: string[]; question: Message; result: Object; user: User; }; error?: Error | string;}>}
  */
@@ -198,7 +198,7 @@ async function askReactionQuestionProcessor(question, defaultOptions, channel, l
 /**
  * @param {MessageQuestion} question
  * @param {DMChannel | TextChannel | NewsChannel} channel
- * @param {{messageTimeout: number;reactionTimeout: number; stopEmote?: string;deleteQuestion?: boolean;deleteMessage?: boolean;deleteReaction?: boolean;}} defaultOptions
+ * @param {{messageTimeout: number;reactionTimeout?: number; stopEmote?: string;deleteQuestion?: boolean;deleteMessage?: boolean;deleteReaction?: boolean;}} defaultOptions
  * @param {{message: Message;result: Object;question: MessageQuestion;answered: [];} | {reaction: MessageReaction;user: User;result: Object;question: ReactionQuestion;possibleAnswers: string[];answered: [];}} last
  * @return {Promise<{data?: {message: Message; result: Object; question: Message;}; error?: Error | string }>}
  */
@@ -240,3 +240,42 @@ function isIterable(obj) {
     }
     return typeof obj[Symbol.iterator] === 'function';
 }
+
+/**
+ * @param {string | string[]} emojis
+ * @param {string | string[]} userIds
+ * @param {DMChannel | TextChannel | NewsChannel} channel
+ * @param {{content?: string;embed?: Object;}} messageObj
+ * @param {number} timeout in ms
+ */
+async function askReactionQuestion(emojis, userIds, channel, messageObj, timeout) {
+    if (typeof emojis === 'string') emojis = [emojis];
+    if (typeof userIds === 'string') userIds = [userIds];
+    const question = new ReactionQuestion().setQuestion(() => messageObj)
+        .setFilter(({ user }) => userIds.includes(user.id))
+        // @ts-ignore
+        .setPossibleAnswers(() => emojis);
+    return await askReactionQuestionProcessor(question, { reactionTimeout: timeout }, channel, null);
+}
+
+/**
+ * @param {any} filter
+ * @param {string | string[]} userIds
+ * @param {DMChannel | TextChannel | NewsChannel} channel
+ * @param {{content?: string;embed?: Object;}} messageObj
+ * @param {number} timeout in ms
+ */
+async function askMessageQuestion(filter, userIds, channel, messageObj, timeout) {
+    if (typeof userIds === 'string') userIds = [userIds];
+    const question = new MessageQuestion().setQuestion(() => messageObj)
+        .setFilter(filter);
+    return await askMessageQuestionProcessor(question, { messageTimeout: timeout }, channel, null);
+}
+
+module.exports = {
+    QuestionsAPI,
+    ReactionQuestion,
+    MessageQuestion,
+    askReactionQuestion,
+    askMessageQuestion,
+};
