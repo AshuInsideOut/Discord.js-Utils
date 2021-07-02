@@ -248,7 +248,7 @@ function isIterable(obj) {
  * @param {{content?: string;embed?: Object;}} messageObj
  * @param {number} timeout in ms
  */
-async function askReactionQuestion(emojis, userIds, channel, messageObj, timeout) {
+async function askReactionQuestion(emojis, userIds, channel, messageObj, timeout = 120 * 1000) {
     if (typeof emojis === 'string') emojis = [emojis];
     if (typeof userIds === 'string') userIds = [userIds];
     const question = new ReactionQuestion().setQuestion(() => messageObj)
@@ -265,7 +265,7 @@ async function askReactionQuestion(emojis, userIds, channel, messageObj, timeout
  * @param {{content?: string;embed?: Object;}} messageObj
  * @param {number} timeout in ms
  */
-async function askMessageQuestion(filter, userIds, channel, messageObj, timeout) {
+async function askMessageQuestion(filter, userIds, channel, messageObj, timeout = 120 * 1000) {
     if (typeof userIds === 'string') userIds = [userIds];
     const question = new MessageQuestion().setQuestion(() => messageObj)
         .setFilter(filter);
