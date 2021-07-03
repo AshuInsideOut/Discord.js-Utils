@@ -14,9 +14,9 @@ module.exports = {
     ...utils,
     /**
      * @param {import("discord.js").Client} client
-     * @param {{ isCmdManager: boolean; isHelpCommand: boolean; }} [options]
+     * @param {{ isCmdManager: boolean; isHelpCommand: boolean; prefix: string; }} [options]
      */
-    init(client, options = { isCmdManager: false, isHelpCommand: false }) {
+    init(client, options = { isCmdManager: false, isHelpCommand: false, prefix: '!' }) {
         setClient(client);
         const isCmdManager = options && options.isCmdManager;
         if (!isCmdManager) return;

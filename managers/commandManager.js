@@ -45,11 +45,7 @@ function init(options) {
     logger.warn(`Client not provided, Command Manager has been disabled.`);
     return;
   }
-  let prefix = options.prefix;
-  if (!options || !options.prefix) {
-    prefix = '!';
-    logger.warn(`Prefix not provided, setting default one '!'.`);
-  }
+  const prefix = options.prefix;
 
   if (!options && options.prefixMap) {
     prefixMap = new Map();

@@ -6,7 +6,7 @@ module.exports = async (message) => {
     const sortedCommands = commands.sort((a, b) => b.category.weight - a.category.weight);
     const categories = [];
     sortedCommands.forEach(command => {
-        if (!categories.find(c => c.category.name)) categories.push(command.category);
+        if (!categories.includes(command.category)) categories.push(command.category);
     });
     const sortedCategoryCommandArray = [];
     categories.forEach(category => {
