@@ -3,8 +3,13 @@ const logger = require('../utils/logger');
 
 /**
  * @type {Client} 
-*/
+ */
 let bot = null;
+
+/**
+ * @type {string} 
+ */
+let prefix = null;
 
 /**
  * @param {Client} client
@@ -21,5 +26,21 @@ function getClient() {
     return bot;
 }
 
+/**
+ * @return {string}
+ */
+function getPrefix() {
+    return prefix;
+}
+
+/**
+ * @param {string} prefix
+ */
+function setPrefix(prefix) {
+    this.prefix = prefix;
+}
+
 module.exports.getClient = getClient;
 module.exports.setClient = setClient;
+module.exports.setPrefix = setPrefix;
+module.exports.getPrefix = getPrefix;

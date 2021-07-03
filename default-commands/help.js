@@ -1,5 +1,6 @@
 const { registeredCommands } = require('../managers/CommandManager');
 const { MessageEmbed } = require('discord.js');
+const { getPrefix } = require('../utils/constants');
 
 module.exports = async (message) => {
     const commands = [...registeredCommands];
@@ -20,7 +21,7 @@ module.exports = async (message) => {
     sortedCategoryCommandArray.forEach(sortedCategoryCommand => {
         description += `\n 💠 **${sortedCategoryCommand[0].category.name}**\n`;
         sortedCategoryCommand.forEach(b => {
-            description += `◻ \`${b.command}\`: ${b.description}\n`;
+            description += `◽ \`${getPrefix()}${b.command}\`: ${b.description}\n`;
         });
     });
     const embed = new MessageEmbed();

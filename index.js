@@ -4,7 +4,7 @@ const Menus = require('./menus');
 const CommandManager = require('./managers/CommandManager');
 const helpHandler = require('./default-commands/help');
 const utils = require('./utils/utils');
-const { setClient } = require('./utils/constants');
+const { setClient, setPrefix } = require('./utils/constants');
 
 module.exports = {
     ...QuestionManager,
@@ -18,6 +18,7 @@ module.exports = {
      */
     init(client, options = { isCmdManager: false, isHelpCommand: false, prefix: '!' }) {
         setClient(client);
+        setPrefix(options.prefix);
         const isCmdManager = options && options.isCmdManager;
         if (!isCmdManager) return;
         if (options.isHelpCommand) {

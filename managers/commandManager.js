@@ -1,5 +1,5 @@
 const logger = require('../utils/logger');
-const { getClient } = require('../utils/constants');
+const { getClient, getPrefix } = require('../utils/constants');
 
 const registeredCommands = [];
 const commandHandlerObjs = [];
@@ -45,7 +45,7 @@ function init(options) {
     logger.warn(`Client not provided, Command Manager has been disabled.`);
     return;
   }
-  const prefix = options.prefix;
+  const prefix = getPrefix();
 
   if (!options && options.prefixMap) {
     prefixMap = new Map();
