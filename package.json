@@ -1,6 +1,6 @@
 {
   "name": "@abdevs/discord.js-utils",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "description": "A utils package for discord.js lib.",
   "main": "index.js",
   "scripts": {

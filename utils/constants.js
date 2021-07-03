@@ -9,7 +9,7 @@ let bot = null;
 /**
  * @type {string} 
  */
-let prefix = null;
+let prefixS = null;
 
 /**
  * @param {Client} client
@@ -30,14 +30,14 @@ function getClient() {
  * @return {string}
  */
 function getPrefix() {
-    return prefix;
+    return prefixS;
 }
 
 /**
  * @param {string} prefix
  */
 function setPrefix(prefix) {
-    this.prefix = prefix;
+    prefixS = prefix;
 }
 
 module.exports.getClient = getClient;
