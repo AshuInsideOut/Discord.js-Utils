@@ -1,5 +1,10 @@
 const { User, Guild, Channel, GuildMember, Role, TextChannel, DMChannel, NewsChannel, Message, MessageReaction } = require('discord.js');
 const { getClient } = require('./constants');
+const fs = require('fs');
+const logger = require('./logger');
+const yaml = require('yaml');
+const path = require('path');
+const appDir = path.dirname(require.main.filename);
 
 /**
  * @param {(args) => Promise<any> | any} asyncFunction
@@ -176,6 +181,36 @@ function isValidEmail(email) {
     return re.test(String(email).toLowerCase());
 }
 
+/**
+ * @param {string} fileNameOrDir file name or directory
+ * @param {T} defaultObject
+ * @param {'yml' | 'json'} type
+ * @return {T}
+ * @template T
+ */
+function getConfig(fileNameOrDir, defaultObject, type = 'yml') {
+    if (type !== 'yml' && type !== 'json') type = 'yml';
+    const isDir = fileNameOrDir.startsWith('.');
+    const defaultDir = `${appDir}/configs`;
+    const path = isDir ? fileNameOrDir : `${defaultDir}/${fileNameOrDir}.${type}`;
+    if (!isDir && !fs.existsSync(defaultDir)) fs.mkdirSync(defaultDir);
+    if (fs.existsSync(path)) {
+        let obj;
+        try {
+            if (type === 'yml') obj = yaml.parse(fs.readFileSync(path, 'utf-8'));
+            else obj = JSON.parse(fs.readFileSync(path, 'utf-8'));
+        } catch (error) {
+            logger.error(`Something went wrong while loading ${fileNameOrDir}.${type} config file. This could happen because your wrongly configured the file. Error: ${error.message}`);
+        }
+        return obj;
+    }
+    const rawData = type === 'yml' ? yaml.stringify(defaultObject) : JSON.stringify(defaultObject, null, 2);
+    fs.writeFile(path, rawData, (err) => {
+        if (err) logger.error(`Something went wrong while create new ${fileNameOrDir}.${type} config file. Error: ${err.message}`);
+    });
+    return defaultObject;
+}
+
 module.exports = {
     isValidSnowflake,
     errorHandler,
@@ -190,5 +225,6 @@ module.exports = {
     findCodeBlock,
     findEmoteById,
     isValidEmail,
-    deepCloneWithLose
+    deepCloneWithLose,
+    getConfig
 };
