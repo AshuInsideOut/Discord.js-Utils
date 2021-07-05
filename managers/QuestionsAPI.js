@@ -103,7 +103,7 @@ class QuestionsAPI {
     }
 
     /**
-     * @param {MessageQuestion[] | ReactionQuestion[]} question
+     * @param {[MessageQuestion, ReactionQuestion]} question
      */
     addQuestion(...question) {
         registeredQuestions.get(this).push(...question);
