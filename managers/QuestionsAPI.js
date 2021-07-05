@@ -103,7 +103,7 @@ class QuestionsAPI {
     }
 
     /**
-     * @param {[MessageQuestion, ReactionQuestion]} question
+     * @param {MessageQuestion[] | ReactionQuestion[]} question
      */
     addQuestion(...question) {
         registeredQuestions.get(this).push(...question);
@@ -280,7 +280,10 @@ async function askReactionQuestion(emojis, userIds, channel, messageObj, timeout
 async function askMessageQuestion(filter, userIds, channel, messageObj, timeout = 120 * 1000) {
     if (typeof userIds === 'string') userIds = [userIds];
     const question = new MessageQuestion().setQuestion(() => messageObj)
-        .setFilter(filter);
+        .setFilter(async i => {
+            if (!userIds.includes(i.message.author.id)) return false;
+            return await filter(i);
+        });
     return await askMessageQuestionProcessor(question, { messageTimeout: timeout }, channel, null);
 }
 
