@@ -121,7 +121,7 @@ class QuestionsAPI {
             if (questionObj instanceof ReactionQuestion) {
                 // @ts-ignore
                 const { data, error } = await askReactionQuestionProcessor(questionObj, this.defaultOptions, channel, last);
-                if (error) return { error };
+                if (error) return { data, error };
                 const { reaction, possibleAnswers, question, result, user } = data;
                 last = { reaction, user, result, question, possibleAnswers, answered };
                 answered.push(data);
@@ -129,7 +129,7 @@ class QuestionsAPI {
             }
             // @ts-ignore
             const { data, error } = await askMessageQuestionProcessor(questionObj, this.defaultOptions, channel, last);
-            if (error) return { error };
+            if (error) return { data, error };
             const { message, result, question } = data;
             last = { message, result, question, answered };
             answered.push(data);
@@ -165,7 +165,10 @@ async function askReactionQuestionProcessor(question, defaultOptions, channel, l
         questionMessage = await channel.send(await question.question({ last }));
         if (Array.isArray(questionMessage)) questionMessage = questionMessage[0];
     } catch (error) {
-        return { error: error.message.includes('Cannot send messages to this user') ? 'dmClosed' : error };
+        return {
+            data: { possibleAnswers, question: null, reaction: null, user: null, result: null },
+            error: error.message.includes('Cannot send messages to this user') ? 'dmClosed' : error
+        };
     }
     react(questionMessage, possibleAnswers);
     let reactedBy;
@@ -184,7 +187,10 @@ async function askReactionQuestionProcessor(question, defaultOptions, channel, l
         collectedReaction = await questionMessage.awaitReactions(filter, collectorOptions);
     } catch (error) {
         if ((options && options.deleteQuestion) || defaultOptions.deleteQuestion) questionMessage.delete();
-        return { error: isIterable(error) ? 'time' : error };
+        return {
+            data: { question: questionMessage, possibleAnswers, reaction: null, result: null, user: null },
+            error: isIterable(error) ? 'time' : error
+        };
     }
     const answer = collectedReaction.first();
     let result;
@@ -192,7 +198,7 @@ async function askReactionQuestionProcessor(question, defaultOptions, channel, l
     if ((options && options.deleteReaction) || defaultOptions.deleteReaction) questionMessage.reactions.resolve(answer).users.remove(reactedBy);
     if ((options && options.deleteQuestion) || defaultOptions.deleteQuestion) questionMessage.delete();
     const data = { reaction: answer, user: reactedBy, result, question: questionMessage, possibleAnswers };
-    return { data };
+    return { data, error: null };
 }
 
 /**
@@ -209,7 +215,10 @@ async function askMessageQuestionProcessor(question, defaultOptions, channel, la
         questionMessage = await channel.send(await question.question({ last }));
         if (Array.isArray(questionMessage)) questionMessage = questionMessage[0];
     } catch (error) {
-        return { error: error.message.includes('Cannot send messages to this user') ? 'dmClosed' : error };
+        return {
+            data: { message: null, question: null, result: null },
+            error: error.message.includes('Cannot send messages to this user') ? 'dmClosed' : error
+        };
     }
     const filter = async (/** @type {Message} */ message) => question.filter({ message, question: questionMessage, last });
     const collectorOptions = { max: 1, errors: ['time'], time: (options && options.messageTimeout) || defaultOptions.messageTimeout };
@@ -219,16 +228,19 @@ async function askMessageQuestionProcessor(question, defaultOptions, channel, la
         collectedAnswer = await channel.awaitMessages(filter, collectorOptions);
     } catch (error) {
         if ((options && options.deleteQuestion) || defaultOptions.deleteQuestion) questionMessage.delete();
-        return { error: isIterable(error) ? 'time' : error };
+        return {
+            data: { question: questionMessage, result: null, message: null },
+            error: isIterable(error) ? 'time' : error
+        };
     }
     answer = collectedAnswer.first();
-    if (typeof answer !== 'object' && Array.isArray(answer)) return { error: answer };
+    if (typeof answer !== 'object' && Array.isArray(answer)) return { data: { message: null, question: questionMessage, result: null }, error: answer };
     let result;
     if (question.run) result = await question.run({ message: answer, question: questionMessage, last });
     if ((options && options.deleteQuestion) || defaultOptions.deleteQuestion) questionMessage.delete();
     if ((options && options.deleteMessage) || defaultOptions.deleteMessage) answer.delete();
     const data = { message: answer, result, question: questionMessage };
-    return { data };
+    return { data, error: null };
 }
 
 /**

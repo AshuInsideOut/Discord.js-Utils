@@ -69,13 +69,13 @@ async function fetchGuild(guildResolvable) {
 
 /**
  * @param {string} channelResolvable
- * @return {Promise<Channel>}
+ * @return {Promise<TextChannel>}
  */
 async function fetchChannel(channelResolvable) {
     const bot = getClient();
     if (isValidSnowflake(channelResolvable)) {
         const { data } = await errorHandler(bot.channels.fetch, bot.channels, channelResolvable);
-        return data ? data : undefined;
+        return data ? (data.type === 'text' ? data : null) : null;
     }
     const re = /<#(\d{17,19})>/g;
     const exec = re.exec(channelResolvable);
@@ -83,7 +83,7 @@ async function fetchChannel(channelResolvable) {
     const channelId = exec[1];
     if (isValidSnowflake(channelId)) {
         const { data } = await errorHandler(bot.channels.fetch, bot.channels, channelId);
-        return data ? data : undefined;
+        return data ? (data.type === 'text' ? data : null) : null;
     }
 }
 
@@ -211,6 +211,49 @@ function getConfig(fileNameOrDir, defaultObject, type = 'yml') {
     return defaultObject;
 }
 
+class SpamHandler {
+    /**
+     * @param {number} timeout in ms
+     * @param {number} messageCount
+     */
+    constructor(timeout, messageCount) {
+        this._timeout = timeout;
+        this._messageCount = messageCount;
+        this._dataMap = new Map();
+        this._timeoutMap = new Map();
+    }
+
+    /**
+     * @param {string} discordId
+     * @return {boolean}
+     */
+    isSpamming(discordId) {
+        if (!this._dataMap.has(discordId)) {
+            this._dataMap.set(discordId, { count: 1 });
+            const timeout = setTimeout(() => {
+                this._dataMap.delete(discordId);
+                this._timeoutMap.delete(discordId);
+            }, this._timeout);
+            this._timeoutMap.set(discordId, timeout);
+            return false;
+        }
+        const data = this._dataMap.get(discordId);
+        if (data.count > this._messageCount) return true;
+        data.count++;
+        return false;
+    }
+
+    /**
+     * @param {string} discordId
+     */
+    resetUser(discordId) {
+        const timeout = this._timeoutMap.get(discordId);
+        if (!timeout) return;
+        clearTimeout(timeout);
+        this._timeoutMap.delete(discordId);
+    }
+}
+
 module.exports = {
     isValidSnowflake,
     errorHandler,
@@ -226,5 +269,6 @@ module.exports = {
     findEmoteById,
     isValidEmail,
     deepCloneWithLose,
-    getConfig
+    getConfig,
+    SpamHandler
 };
