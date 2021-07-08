@@ -52,7 +52,52 @@ A utils package for discord.js lib. This contains utils function and classes to 
 ### QuestionsAPI Example
 
 ```js
-//TODO: example
+const {
+  addCommand,
+  MessageQuestion,
+  ReactionQuestion,
+  QuestionsAPI,
+} = require('@abdevs/discord.js-utils');
+const { MessageEmbed } = require('discord.js');
+
+module.exports = async () => {
+  addCommand({
+    command: 'helpme',
+    handler: async (message) => {
+      const typeEmbed = new MessageEmbed({
+        description: `What type of help you want?
+            ❤: *Love Life*
+            💰: *Money*`,
+        color: 'RANDOM',
+      });
+      const moreInfo = new MessageEmbed({
+        description: 'We need additional about your situation',
+        color: 'RANDOM',
+      });
+      const api = new QuestionsAPI();
+      const typeQuestion = new ReactionQuestion(message.author.id)
+        .setQuestion({ embed: typeEmbed, reply: message.author })
+        .setPossibleAnswers(['❤', '💰'])
+        .setRun(({ reaction }) => {
+          if (reaction.emoji.name === '❤') return 'Love';
+          return 'Money';
+        });
+      const helpQuestion = new MessageQuestion(message.author.id)
+        .setQuestion({ embed: moreInfo, reply: message.author })
+        .setRun(({ message }) => message.content);
+      api.addQuestion([typeQuestion, helpQuestion]);
+      const { data } = await api.ask(message.channel);
+      const type = data[0].result;
+      const info = data[1].result;
+      const embed = new MessageEmbed({
+        description: `${message.author.toString()} needs help with **${type}**
+            *Here is some additional information:*
+            ${info}`,
+      });
+      message.channel.send({ embed });
+    },
+  });
+};
 ```
 
 # Terms and Conditions
