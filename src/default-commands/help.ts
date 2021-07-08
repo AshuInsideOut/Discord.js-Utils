@@ -1,17 +1,17 @@
-const { registeredCommands } = require('../managers/CommandManager');
-const { MessageEmbed } = require('discord.js');
-const { getPrefix } = require('../utils/constants');
+import { registeredCommandHandlers, getPrefix } from '../managers/CommandManager';
+import { Message, MessageEmbed } from 'discord.js';
+import { Category, CommandHandler } from '../interfaces/CommandManager';
 
-module.exports = async (message) => {
-    const commands = [...registeredCommands];
+export default async (message: Message) => {
+    const commands = [...registeredCommandHandlers];
     const sortedCommands = commands.sort((a, b) => b.category.weight - a.category.weight);
-    const categories = [];
+    const categories: Category[] = [];
     sortedCommands.forEach(command => {
         if (!categories.includes(command.category)) categories.push(command.category);
     });
-    const sortedCategoryCommandArray = [];
+    const sortedCategoryCommandArray: CommandHandler[][] = [];
     categories.forEach(category => {
-        const sortedCategoryCommand = [];
+        const sortedCategoryCommand: CommandHandler[] = [];
         sortedCommands.forEach(command => {
             if (command.category.name === category.name) sortedCategoryCommand.push(command);
         });
@@ -26,5 +26,5 @@ module.exports = async (message) => {
     });
     const embed = new MessageEmbed();
     embed.setDescription(description).setColor('BLUE');
-    message.channel.send(embed);
+    message.channel.send({ embed });
 };
