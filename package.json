@@ -1,9 +1,9 @@
 {
   "name": "@abdevs/discord.js-utils",
-  "version": "5.0.1",
+  "version": "5.0.3",
   "description": "A utils package for discord.js lib.",
   "main": "lib/index.js",
-  "types": "lib",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc -p ."
   },
@@ -27,6 +27,7 @@
     "yaml": "^1.10.2"
   },
   "devDependencies": {
-    "@types/node": "^16.0.1"
+    "@types/node": "^16.0.1",
+    "@types/ws": "^7.4.6"
   }
 }
