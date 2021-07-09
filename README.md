@@ -2,6 +2,10 @@
 
 A utils package for discord.js lib. This contains utils function and classes to easily work with Discord.js
 
+# Support
+
+Join our [Discord Server](http://discord.abdevs.org) for any support related queries.
+
 # Installation
 
 `npm i @abdevs/discord.js-utils` or `yarn add @abdevs/discord.js-utils`
