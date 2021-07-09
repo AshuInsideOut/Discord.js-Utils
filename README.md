@@ -10,6 +10,20 @@ Join our [Discord Server](http://discord.abdevs.org) for any support related que
 
 `npm i @abdevs/discord.js-utils` or `yarn add @abdevs/discord.js-utils`
 
+Initialization
+
+```js
+const discordUtils = require('@abdevs/discord.js-utils');
+const { Client } = require('discord.js');
+const client = new Client();
+discordUtils.init(client, {
+  isCmdManager: true,
+  isHelpCommand: true,
+  cmdManagerOptions: { prefix, isPrefixMap: false },
+});
+client.login(token);
+```
+
 # Options
 
 | Option            | Default                              | Description             |
