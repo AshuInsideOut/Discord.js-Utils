@@ -1,4 +1,4 @@
-import _ from 'colors';
+import 'colors';
 
 function info(message: string) {
     console.log('[INFO]: '.blue, '[Discord.JS Utils]'.green, message.blue);
