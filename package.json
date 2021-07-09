@@ -1,11 +1,11 @@
 {
   "name": "@abdevs/discord.js-utils",
-  "version": "5.0.3",
+  "version": "5.0.4",
   "description": "A utils package for discord.js lib.",
   "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "types": "lib",
   "scripts": {
-    "build": "tsc -p ."
+    "build": "tsc"
   },
   "keywords": [
     "discord.js-utils",
