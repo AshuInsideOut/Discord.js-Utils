@@ -76,7 +76,7 @@ export class ReactionQuestion {
 export class QuestionsAPI {
     private readonly registeredQuestions: QuestionType[] = [];
     private readonly defaultOptions: QuestionOptions;
-    constructor(defaultOptions = {
+    constructor(defaultOptions: QuestionOptions = {
         messageTimeout: 120 * 1000,
         reactionTimeout: 60 * 1000,
         deleteMessage: false,
