@@ -1,4 +1,4 @@
-import { getClient } from './constants';
+import { getClient as getConstClient } from './constants';
 import fs from 'fs';
 import logger from './logger';
 import yaml from 'yaml';
@@ -25,7 +25,7 @@ export function isValidSnowflake(snowflake: Snowflake): boolean {
 }
 
 export async function fetchUser(userResolvable: string): Promise<User | null> {
-    const bot = getClient();
+    const bot = getConstClient();
     if (!bot) return null;
     if (isValidSnowflake(userResolvable)) {
         const { data } = await errorHandler(bot.users.fetch, bot.users, userResolvable);
@@ -43,7 +43,7 @@ export async function fetchUser(userResolvable: string): Promise<User | null> {
 }
 
 export async function fetchGuild(guildResolvable: string): Promise<Guild | null> {
-    const bot = getClient();
+    const bot = getConstClient();
     if (!bot) return null;
     if (isValidSnowflake(guildResolvable)) {
         const found = bot.guilds.cache.get(guildResolvable);
@@ -54,7 +54,7 @@ export async function fetchGuild(guildResolvable: string): Promise<Guild | null>
 }
 
 export async function fetchChannel(channelResolvable: string): Promise<TextChannel | null> {
-    const bot = getClient();
+    const bot = getConstClient();
     if (!bot) return null;
     if (isValidSnowflake(channelResolvable)) {
         const { data } = await errorHandler(bot.channels.fetch, bot.channels, channelResolvable);
@@ -154,7 +154,7 @@ export function findCodeBlock(content: string) {
 }
 
 export function findEmoteById(emojiResolvable: string): GuildEmoji | null {
-    const bot = getClient();
+    const bot = getConstClient();
     if (!bot) return null;
     const found = bot.emojis.cache.get(emojiResolvable);
     return found ? found : null;
@@ -186,6 +186,10 @@ export function getConfig<T>(fileNameOrDir: string, defaultObject: T, type: 'yml
         if (err) logger.error(`Something went wrong while create new ${fileNameOrDir}.${type} config file. Error: ${err.message}`);
     });
     return defaultObject;
+}
+
+export function getClient() {
+    return getConstClient();
 }
 
 export class SpamHandler {

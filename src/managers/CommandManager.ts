@@ -24,8 +24,8 @@ export function getPrefixMap() {
   return prefixMap;
 }
 
-export function registerCategory(category: Category) {
-  registeredCategories.push(category);
+export function registerCategory(...category: Category[]) {
+  registeredCategories.push(...category);
 }
 
 registeredCategories.push(defaultCategory);
