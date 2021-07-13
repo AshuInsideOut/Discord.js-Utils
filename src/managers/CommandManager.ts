@@ -93,13 +93,14 @@ export function init(options: CommandManagerOptions = { prefix: '!', isPrefixMap
 
 function findCommand(content: string, prefix: string, guildId?: string): Command | null {
   if (prefixMap && guildId) prefix = getPrefixMap().get(guildId) || prefix;
+  prefix = prefix.toLowerCase();
   const contentSplit = content.split(/\s+/);
-  const executedCommand = contentSplit[0];
+  const executedCommand = contentSplit[0].toLowerCase();
   contentSplit.shift();
   const args = contentSplit;
   for (const handler of registeredCommandHandlers) {
-    const command = handler.command;
-    const aliases = handler.aliases;
+    const command = handler.commands.toLowerCase();
+    const aliases = handler.aliases.map(alias => alias.toLowerCase());
     if (executedCommand === `${prefix}${command}`) return { ...handler, args, prefix };
     for (const alias of aliases) {
       if (executedCommand !== `${prefix}${alias}`) continue;
