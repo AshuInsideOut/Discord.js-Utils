@@ -3,7 +3,7 @@ import fs from 'fs';
 import logger from './logger';
 import yaml from 'yaml';
 import path from 'path';
-import { Guild, GuildEmoji, GuildMember, Role, Snowflake, TextChannel, User } from 'discord.js';
+import { Channel, DMChannel, Guild, GuildEmoji, GuildMember, NewsChannel, Role, Snowflake, TextChannel, ThreadChannel, User } from 'discord.js';
 const appDir = path.dirname(require.main!.filename);
 
 export async function errorHandler<T, K>(asyncFunction: (this: K, ...args: any[]) => Promise<T> | T, thisArg: K, ...args: any[]): Promise<{ data?: T, error?: Error; }> {
@@ -53,12 +53,24 @@ export async function fetchGuild(guildResolvable: string): Promise<Guild | null>
     return found ? found : null;
 }
 
-export async function fetchChannel(channelResolvable: string): Promise<TextChannel | null> {
+export async function fetchChannel(channelResolvable: string): Promise<DMChannel | TextChannel | NewsChannel | ThreadChannel | null> {
     const bot = getConstClient();
     if (!bot) return null;
+    function parseChannel(channel: Channel) {
+        switch (channel.type) {
+            case 'DM': return channel as DMChannel;
+            case 'GUILD_TEXT': return channel as TextChannel;
+            case 'GUILD_NEWS': return channel as NewsChannel;
+            case 'GUILD_PUBLIC_THREAD':
+            case 'GUILD_PRIVATE_THREAD':
+            case 'GUILD_NEWS_THREAD': return channel as ThreadChannel;
+            default: return null;
+        }
+    }
     if (isValidSnowflake(channelResolvable)) {
         const { data } = await errorHandler(bot.channels.fetch, bot.channels, channelResolvable);
-        return data ? (data.type === 'text' ? data as TextChannel : null) : null;
+        if (!data) return null;
+        return parseChannel(data);
     }
     const re = /<#(\d{17,19})>/g;
     const exec = re.exec(channelResolvable);
@@ -66,7 +78,8 @@ export async function fetchChannel(channelResolvable: string): Promise<TextChann
     const channelId = exec[1];
     if (isValidSnowflake(channelId)) {
         const { data } = await errorHandler(bot.channels.fetch, bot.channels, channelId);
-        return data ? (data.type === 'text' ? data as TextChannel : null) : null;
+        if (!data) return null;
+        return parseChannel(data);
     }
     return null;
 }
@@ -182,10 +195,16 @@ export function getConfig<T>(fileNameOrDir: string, defaultObject: T, type: 'yml
         return obj;
     }
     const rawData = type === 'yml' ? yaml.stringify(defaultObject) : JSON.stringify(defaultObject, null, 2);
-    fs.writeFile(path, rawData, (err) => {
-        if (err) logger.error(`Something went wrong while create new ${fileNameOrDir}.${type} config file. Error: ${err.message}`);
-    });
+    try {
+        fs.writeFileSync(path, fixComments(rawData));
+    } catch (err) {
+        logger.error(`Something went wrong while create new ${fileNameOrDir}.${type} config file. Error: ${err instanceof Error ? err.message : `${err}`}`);
+    }
     return defaultObject;
+}
+
+function fixComments(text: string) {
+    return text.replace(/("|')?~(\d+)?("|')?:\s("|')?.+("|')?/g, match => "# " + match.replace(/("|')?~(\d+)?("|')?:\s/g, '').replace(/("|')/g, ''));
 }
 
 export function getClient() {
@@ -219,4 +238,41 @@ export class SpamHandler {
         clearTimeout(timeout);
         this.timeoutMap.delete(discordId);
     }
+}
+
+export async function setPlaceholders(message: string | string[], variables: { [key: string]: any; }) {
+    if (!Array.isArray(message)) message = [message];
+    if (!variables) return message.join('\n');
+    const isFunction = (fun: any) => fun[Symbol.toStringTag] === 'AsyncFunction' || {}.toString.call(fun) === '[object Function]';
+    const generateKeyRegex = (variableKey: string, key: string) => {
+        const rawRegex = `{${variableKey}_${key.replace(/\s+/g, '')}}`;
+        return new RegExp(rawRegex, 'g');
+    };
+    const setVariablePlaceholders = async (line: string, variableKey: string, obj: { [key: string]: any; }) => {
+        const hasObjKey = new RegExp(`{${variableKey}_(?<key>[A-Za-z1-9_]+)}`, 'g');
+        let matches;
+        let result = line;
+        while ((matches = hasObjKey.exec(line)) !== null) {
+            if (!matches.groups) continue;
+            const key = matches.groups.key;
+            const value = obj[key];
+            if (value === undefined || value === null) {
+                logger.warn(`Trying to use ${key} placeholder while the value returned is undefined or null`);
+                continue;
+            }
+            if (isFunction(value)) {
+                let returned = value.call(obj);
+                if (returned !== 'string') returned = returned.toString();
+                result = result.replace(generateKeyRegex(variableKey, key), returned);
+                continue;
+            }
+            result = result.replace(generateKeyRegex(variableKey, key), value.toString());
+        }
+        return result;
+    };
+    for (const variable in variables) message = await Promise.all(message.map(line => {
+        if (typeof variables[variable] === 'object') return setVariablePlaceholders(line, variable, variables[variable]);
+        return line.includes(`{${variable}}`) ? line.replace(new RegExp(`{${variable}}`, 'g'), variables[variable]) : line;
+    }));
+    return message.join('\n');
 }

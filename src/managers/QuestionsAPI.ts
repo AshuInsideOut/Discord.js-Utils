@@ -109,14 +109,14 @@ export class QuestionsAPI {
         for (const question of questions) {
             if (question instanceof ReactionQuestion) {
                 const result: ProcessedReactionQuestionResult = await askReactionQuestionProcessor(question, this.defaultOptions, channel, last);
-                if (result.error) return { error: result.error, errorData: result.data = {} };
+                if (result.error) return { error: result.error, errorData: result.data = { } };
                 last = result.data as LastReactionAnswer;
                 answered.push(last);
                 continue;
             }
             if (question instanceof MessageQuestion) {
                 const result: ProcessedMessageQuestionResult = await askMessageQuestionProcessor(question, this.defaultOptions, channel, last);
-                if (result.error) return { error: result.error, errorData: result.data = {} };
+                if (result.error) return { error: result.error, errorData: result.data = { } };
                 last = result.data as LastMessageAnswer;
                 answered.push(last);
                 continue;
@@ -179,7 +179,7 @@ async function askReactionQuestionProcessor(question: ReactionQuestion, defaultO
         //If error then checking if it's because of time or else return the error.
         return {
             data: { possibleAnswers },
-            error: error instanceof Error ? (channel.type === 'dm' && error.message.includes('Cannot send messages to this user') ? new Error('dmClosed') : error) : new Error('Unknown')
+            error: error instanceof Error ? (channel.type === 'DM' && error.message.includes('Cannot send messages to this user') ? new Error('dmClosed') : error) : new Error('Unknown')
         };
     }
     //Setting all the reactions
@@ -189,17 +189,17 @@ async function askReactionQuestionProcessor(question: ReactionQuestion, defaultO
         //Checking if the reaction is added by the provided users
         if (!userIds.includes(u.id)) return false;
         const id = r.emoji.id;
-        const name = r.emoji.name;
+        const name = r.emoji.name!;
         if (!possibleAnswers.includes(name) && id && !possibleAnswers.includes(id)) return false;
         const data = { reaction: r, user: u, question: questionMessage, possibleAnswers, last };
         if (question.filter && !(await question.filter!(data))) return false;
         reactedBy = u;
         return true;
     };
-    const collectorOptions = { maxEmojis: 1, errors: ['time'], time: checkOverrides('reactionTimeout', defaultOptions, options, 60 * 1000) };
+    const collectorOptions = { maxEmojis: 1, errors: ['time'], time: checkOverrides('reactionTimeout', defaultOptions, options, 60 * 1000), filter };
     let collectedReaction;
     try {
-        collectedReaction = await questionMessage.awaitReactions(filter, collectorOptions);
+        collectedReaction = await questionMessage.awaitReactions(collectorOptions);
     } catch (error) {
         if (checkOverrides('deleteQuestion', defaultOptions, options, false)) deleteMessage(questionMessage);
         return {
@@ -235,17 +235,17 @@ async function askMessageQuestionProcessor(question: MessageQuestion, defaultOpt
         else questionMessage = message;
     } catch (error) {
         return {
-            error: error instanceof Error ? (channel.type === 'dm' && error.message.includes('Cannot send messages to this user') ? new Error('dmClosed') : error) : new Error('Unknown')
+            error: error instanceof Error ? (channel.type === 'DM' && error.message.includes('Cannot send messages to this user') ? new Error('dmClosed') : error) : new Error('Unknown')
         };
     }
     const filter = async (message: Message) => {
         if (!userIds.includes(message.author.id)) return false;
         return !question.filter ? true : await question.filter!({ message, question: questionMessage, last });
     };
-    const collectorOptions = { max: 1, errors: ['time'], time: checkOverrides('messageTimeout', defaultOptions, options, 120 * 1000) };
+    const collectorOptions = { max: 1, errors: ['time'], time: checkOverrides('messageTimeout', defaultOptions, options, 120 * 1000), filter };
     let collectedAnswer;
     try {
-        collectedAnswer = await channel.awaitMessages(filter, collectorOptions);
+        collectedAnswer = await channel.awaitMessages(collectorOptions);
     } catch (error) {
         if (checkOverrides('deleteQuestion', defaultOptions, options, false)) deleteMessage(questionMessage);
         return {

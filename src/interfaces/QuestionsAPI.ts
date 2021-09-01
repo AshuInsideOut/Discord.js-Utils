@@ -1,4 +1,4 @@
-import { Message, MessageOptions, MessageReaction, User, TextChannel, NewsChannel, DMChannel, APIMessageContentResolvable, MessageAdditions } from 'discord.js';
+import { Message, MessageOptions, MessageReaction, User, TextChannel, NewsChannel, DMChannel } from 'discord.js';
 import { ReactionQuestion, MessageQuestion } from '../managers/QuestionsAPI';
 
 export interface QuestionOptions {

@@ -10,6 +10,7 @@ import { Options } from './interfaces/Defaults';
 export = {
     ...QuestionsAPI,
     ...CommandManager,
+    helpHandler,
     ...Menus,
     ...Utils,
     init(client: Client, options: Options = { isCmdManager: false, isHelpCommand: false, cmdManagerOptions: { isPrefixMap: false, prefix: '!' } }) {

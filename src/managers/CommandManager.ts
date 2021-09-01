@@ -75,10 +75,10 @@ export function init(options: CommandManagerOptions = { prefix: '!', isPrefixMap
     logger.info(`Enabled per-guild prefix mapping`);
   };
 
-  client.on('message', async (message) => {
+  client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
     let command: Command | null;
-    if (message.channel.type === 'text') command = findCommand(message.content, prefix, message.guild!.id);
+    if (message.channel.type === 'GUILD_TEXT') command = findCommand(message.content, prefix, message.guild!.id);
     else command = findCommand(message.content, prefix);
     if (!command) return;
     let counter = 0;
@@ -99,7 +99,7 @@ function findCommand(content: string, prefix: string, guildId?: string): Command
   contentSplit.shift();
   const args = contentSplit;
   for (const handler of registeredCommandHandlers) {
-    const command = handler.commands.toLowerCase();
+    const command = handler.command.toLowerCase();
     const aliases = handler.aliases.map(alias => alias.toLowerCase());
     if (executedCommand === `${prefix}${command}`) return { ...handler, args, prefix };
     for (const alias of aliases) {

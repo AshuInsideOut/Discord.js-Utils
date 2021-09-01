@@ -21,10 +21,10 @@ export default async (message: Message) => {
     sortedCategoryCommandArray.forEach(sortedCategoryCommand => {
         description += `\n 💠 **${sortedCategoryCommand[0].category.name}**\n`;
         sortedCategoryCommand.forEach(b => {
-            description += `▫ \`${getPrefix()}${b.command}\`: ${b.description}\n`;
+            description += `▫ \`${getPrefix(message.guild?.id)}${b.command}\`: ${b.description}\n`;
         });
     });
     const embed = new MessageEmbed();
     embed.setDescription(description).setColor('BLUE');
-    message.channel.send({ embed });
+    message.channel.send({ embeds: [embed] });
 };
