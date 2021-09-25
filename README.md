@@ -1,5 +1,7 @@
 # Discord.js Utils (Re-Coded in TypeScript)
 
+![banner](https://i.imgur.com/93QY8BK.png)
+
 A utils package for discord.js lib. This contains utils function and classes to easily work with Discord.js
 
 # Support

@@ -38,7 +38,7 @@ class PaginationMenu {
 
     private createCollector() {
         const options = this.options;
-        const collector = this.message!.createReactionCollector((_r, u: User) => u.id == this.userId, { time: options.timeout });
+        const collector = this.message!.createReactionCollector({ time: options.timeout, filter: (_r, u: User) => u.id == this.userId });
         collector.on('collect', (r) => {
             if (r.emoji.name == options.reactions.first) {
                 if (options.page != 0) this.select(0);
