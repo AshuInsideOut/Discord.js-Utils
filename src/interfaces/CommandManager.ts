@@ -1,39 +1,79 @@
-import { Message } from 'discord.js';
+import { ApplicationCommandOptionData, CommandInteraction, CommandInteractionOptionResolver, Message } from 'discord.js';
 
 export interface CommandManagerOptions {
     prefix?: string;
     isPrefixMap?: boolean;
+    isHelpCommand?: boolean;
+    defaultCategory?: string;
+    categories?: string[];
+    dev?: {
+        guilds?: string[];
+    };
 }
 
-export interface Category {
-    id: string;
-    name: string;
-    weight: number;
+export interface BaseSlashData {
+    defaultPermission?: boolean;
 }
 
-export interface CommandHandler {
-    command: string;
-    handler: (message: Message, args: string[], command: string) => Promise<any> | any;
+export interface ChatInputSlashData extends BaseSlashData {
+    options?: ApplicationCommandOptionData[];
+    type?: 'CHAT_INPUT';
     description: string;
-    category: Category;
-    aliases: string[];
+}
+
+export interface UserSlashData extends BaseSlashData {
+    type: 'USER';
+}
+
+export interface MessageSlashData extends BaseSlashData {
+    type: 'MESSAGE';
+}
+
+export type SlashData = UserSlashData | MessageSlashData | ChatInputSlashData;
+
+export interface BaseCommand {
+    name: string;
     [key: string]: any;
 }
 
-export interface CommandRawHandler {
-    command: string;
-    handler: (message: Message, args: string[], command: string) => Promise<any> | any;
+export interface SlashCommand extends BaseCommand {
+    type: 'SLASH';
+    slash: SlashData;
+    handler: (interaction: CommandInteraction, options: CommandInteractionOptionResolver, additionalData: any) => any;
+}
+
+export interface MessageCommand extends BaseCommand {
+    type?: 'MESSAGE';
     description?: string;
-    category?: string;
     aliases?: string[];
-    [key: string]: any;
+    category?: string;
+    handler: (message: Message, args: string[], additionalData: any) => any;
 }
 
-export interface MiddlewareHandler {
-    handler: (command: Command, message: Message, next: Function) => Promise<any> | any;
+export interface CombinedCommand extends BaseCommand {
+    type: 'COMBINED';
+    description?: string;
+    aliases?: string[];
+    category?: string;
+    slash: SlashData;
+    handler: (context: Message | CommandInteraction, args: string[] | CommandInteractionOptionResolver, additionalData: any) => any;
 }
 
-export interface Command extends CommandHandler {
-    prefix: string;
-    args: string[];
+export type Command = MessageCommand | SlashCommand | CombinedCommand;
+
+export interface MessageCommandMiddleware {
+    type?: 'MESSAGE',
+    handler: (info: { command: MessageCommand; message: Message; args: string[]; }, additionalData: any) => any;
 }
+
+export interface SlashCommandMiddleware {
+    type: 'SLASH',
+    handler: (info: { command: SlashCommand; interaction: CommandInteraction; options: CommandInteractionOptionResolver; }, additionalData: any) => any;
+}
+
+export interface CombinedCommandMiddleware {
+    type: 'COMBINED',
+    handler: (info: { command: CombinedCommand; context: Message | CommandInteraction; args: string[] | CommandInteractionOptionResolver; }, additionalData: any) => any;
+}
+
+export type Middleware = MessageCommandMiddleware | SlashCommandMiddleware | CombinedCommandMiddleware;

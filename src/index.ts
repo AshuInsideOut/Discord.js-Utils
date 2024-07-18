@@ -1,31 +1,21 @@
 import * as QuestionsAPI from './managers/QuestionsAPI';
 import * as Menus from './menus';
 import * as CommandManager from './managers/CommandManager';
-import helpHandler from './default-commands/help';
 import * as Utils from './utils/utils';
-import { setClient } from './utils/constants';
-import { Client } from 'discord.js';
+import { setClient, setOptions } from './utils/constants';
+import { Client, MessageEmbed } from 'discord.js';
 import { Options } from './interfaces/Defaults';
 
 export = {
     ...QuestionsAPI,
     ...CommandManager,
-    helpHandler,
     ...Menus,
     ...Utils,
-    init(client: Client, options: Options = { isCmdManager: false, isHelpCommand: false, cmdManagerOptions: { isPrefixMap: false, prefix: '!' } }) {
-        const { isCmdManager = false, isHelpCommand = false, cmdManagerOptions = { isPrefixMap: false, prefix: '!' } } = options;
-        const { isPrefixMap = false, prefix = '!' } = cmdManagerOptions;
+    init(client: Client, options: Options = { isCmdManager: false, isDebug: false, defaultEmbed: new MessageEmbed({ color: 'AQUA' }) }) {
+        const { isCmdManager = false, cmdManagerOptions, isDebug = false, defaultEmbed = new MessageEmbed({ color: 'AQUA' }) } = options;
+        setOptions({ isCmdManager, cmdManagerOptions, isDebug, defaultEmbed });
         setClient(client);
         if (!isCmdManager) return;
-        if (isHelpCommand) {
-            CommandManager.addCommand({
-                command: 'help',
-                handler: helpHandler,
-                description: 'Shows list of all commands.',
-                category: 'UnCategorized'
-            });
-        }
-        CommandManager.init({ isPrefixMap, prefix });
+        CommandManager.init(cmdManagerOptions);
     }
 };

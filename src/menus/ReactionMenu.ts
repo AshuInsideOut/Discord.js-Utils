@@ -9,7 +9,7 @@ const requiredMenuPerms = ['SEND_MESSAGES', 'EMBED_LINKS', 'ADD_REACTIONS', 'MAN
 
 //Github: https://github.com/jowsey/discord.js-menu
 
-//Migrated to TypeScript and Modified by ABDevs
+//Migrated to TypeScript and Modified by Arnav Gupta
 
 /**
  * A page object that the menu can display.
