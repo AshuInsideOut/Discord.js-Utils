@@ -1,5 +1,5 @@
-import PaginationMenu from './PaginationMenu';
 import ReactionMenu from './ReactionMenu';
+import PaginationMenu from './PaginationMenu';
 
 export {
     ReactionMenu,

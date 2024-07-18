@@ -6,16 +6,16 @@ A utils package for discord.js lib. This contains utils function and classes to 
 
 # Support
 
-Join our [Discord Server](http://discord.abdevs.org) for any support related queries.
+Join our [Discord Server](https://discord.gg/HahCMDVxKp) for any support related queries.
 
 # Installation
 
-`npm i @abdevs/discord.js-utils` or `yarn add @abdevs/discord.js-utils`
+`npm i @ashuinsideout/discord.js-utils` or `yarn add @ashuinsideout/discord.js-utils`
 
 Initialization
 
 ```js
-const discordUtils = require('@abdevs/discord.js-utils');
+const discordUtils = require('@ashuinsideout/discord.js-utils');
 const { Client } = require('discord.js');
 const client = new Client();
 discordUtils.init(client, {
@@ -77,7 +77,7 @@ const {
   MessageQuestion,
   ReactionQuestion,
   QuestionsAPI,
-} = require('@abdevs/discord.js-utils');
+} = require('@ashuinsideout/discord.js-utils');
 const { MessageEmbed } = require('discord.js');
 
 module.exports = async () => {

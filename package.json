@@ -1,11 +1,12 @@
 {
-  "name": "@abdevs/discord.js-utils",
-  "version": "6.0.2",
+  "name": "@ashuinsideout/discord.js-utils",
+  "version": "6.1.0",
   "description": "A utils package for discord.js lib.",
   "main": "lib/index.js",
   "types": "lib",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "watch": "tsc --watch"
   },
   "files": [
     "lib"
@@ -17,19 +18,28 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/ABDevs-Org/Discord.js-Utils.git"
+    "url": "git+https://github.com/AshuInsideOut/Discord.js-Utils.git"
   },
   "publishConfig": {
     "access": "public"
   },
-  "author": "ABDevs",
+  "author": "Arnav Gupta",
   "license": "ISC",
   "dependencies": {
-    "colors": "^1.4.0",
-    "discord.js": "^13.1.0",
+    "chalk": "^4.1.2",
+    "discord.js": "^13.2.0",
+    "fs-extra": "^10.0.0",
     "yaml": "^1.10.2"
   },
   "devDependencies": {
+    "@types/fs-extra": "^9.0.13",
     "@types/node": "^16.0.1"
+  },
+  "bugs": {
+    "url": "https://github.com/AshuInsideOut/Discord.js-Utils/issues"
+  },
+  "homepage": "https://github.com/AshuInsideOut/Discord.js-Utils#readme",
+  "directories": {
+    "lib": "lib"
   }
 }

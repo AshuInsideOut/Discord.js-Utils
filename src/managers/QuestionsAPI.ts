@@ -109,14 +109,14 @@ export class QuestionsAPI {
         for (const question of questions) {
             if (question instanceof ReactionQuestion) {
                 const result: ProcessedReactionQuestionResult = await askReactionQuestionProcessor(question, this.defaultOptions, channel, last);
-                if (result.error) return { error: result.error, errorData: result.data = { } };
+                if (result.error) return { error: result.error, errorData: result.data = {} };
                 last = result.data as LastReactionAnswer;
                 answered.push(last);
                 continue;
             }
             if (question instanceof MessageQuestion) {
                 const result: ProcessedMessageQuestionResult = await askMessageQuestionProcessor(question, this.defaultOptions, channel, last);
-                if (result.error) return { error: result.error, errorData: result.data = { } };
+                if (result.error) return { error: result.error, errorData: result.data = {} };
                 last = result.data as LastMessageAnswer;
                 answered.push(last);
                 continue;
